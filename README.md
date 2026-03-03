@@ -1,177 +1,174 @@
-# NetEdu — Network-Aware Learning Platform
+# NetEdu
 
-[![CI/CD Pipeline](https://github.com/YOUR_USERNAME/netedu/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/netedu/actions)
-![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)
-![Django](https://img.shields.io/badge/Django-5.0-green?logo=django)
-![React](https://img.shields.io/badge/React-18-61dafb?logo=react)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
+NetEdu is a **Network-Aware Learning Platform**.  
+It is a full-stack platform that measures internet quality and connects it with learning outcomes.  
+Students can run real speed tests, track progress, study offline, and view a real-time leaderboard based on actual platform activity.
 
-> A full-stack platform that measures real internet quality and correlates it with learning progress — helping students understand how their connectivity affects their education.
+## Why This Project Matters
 
----
+- Most edtech apps ignore network quality.
+- NetEdu shows how connectivity impacts study consistency and performance.
+- It combines networking metrics, analytics, and learning progress in one product.
 
-## ✨ Features
+## Core Features
 
-### 🚀 Real Speed Test Engine
-- **Multi-stream measurement** — 4 parallel download streams, like fast.com
-- **NDT7-inspired methodology** — same approach used by M-Lab
-- Measures download, upload, latency, jitter, packet loss
-- Animated live gauge UI with progress rings
-- Auto-detects connection type via Navigator API
+### Authentication and User Management
+- JWT authentication (access + refresh)
+- Role-based users: student, teacher, admin
+- Profile endpoint and secure token refresh handling
 
-### 📊 Network-Learning Correlation *(Unique Feature)*
-- Computes **Pearson correlation** between daily network quality and lessons completed
-- Built with Pandas `merge`, `groupby`, `corr`
-- Scatter plot visualisation on the dashboard
-- Human-readable insights: *"On days with better network, you complete 40% more lessons"*
-- Actionable comparison: good vs poor network days
+### Real Network Measurement
+- Speed test flow with download, upload, latency, jitter, packet loss
+- Network quality scoring and trend tracking
+- Public aggregated network stats endpoint
 
-### 📈 Analytics Dashboard
-- Recharts line, bar, scatter, and pie charts
-- Pandas-powered server-side aggregations
-- Quality score distribution histogram
-- Daily activity heatmap
+### Learning System
+- Courses, enrollments, lessons, quiz attempts
+- Course progress tracking
+- Offline learning support UI
 
-### 🌐 Open Data API
-- `/api/network/public-stats/` — city-level aggregates, no auth required
-- M-Lab style open data principles
+### Analytics and Correlation
+- Dashboard endpoint combining network + learning analytics
+- Correlation endpoint for network quality vs learning activity
+- Server-side analytics built with Pandas
 
-### 🔐 Full Authentication
-- JWT with auto-refresh
-- Role-based access: Student / Teacher / Admin
-- Custom User model (email-based login)
+### Real Leaderboard (No Mock Data)
+- Backend-computed leaderboard from real user activity
+- Scoring based on lessons, completed courses, streak, and quiz performance
+- New personal rank endpoint:
+  - current rank
+  - percentile
+  - neighboring users
+- Frontend leaderboard includes:
+  - search by student name
+  - manual refresh
+  - optional auto-refresh every 30 seconds
+  - "Your Standing" summary card
 
----
+### Product Polish
+- Theme toggle
+- Toast notifications
+- Skeleton loading states
+- Keyboard shortcuts
+- Onboarding tour
+- AI helper/chat component
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Backend | Django 5 + Django REST Framework |
-| Database | PostgreSQL 16 |
-| Auth | JWT (djangorestframework-simplejwt) |
-| Data Analysis | Pandas + NumPy |
-| Frontend | React 18 + TypeScript + Vite |
-| Charts | Recharts |
-| Speed Test | Browser Fetch API (NDT7-inspired) |
-| Containerization | Docker + Docker Compose |
-| CI/CD | GitHub Actions |
-| Reverse Proxy | Nginx |
+- Backend: Django 5, Django REST Framework, SimpleJWT
+- Data: PostgreSQL, Pandas, NumPy
+- Frontend: React 18, TypeScript, Vite
+- Charts/UI: Recharts, Lucide icons
+- Infra: Docker, Docker Compose, Nginx
+- Testing: Pytest (backend), Vitest + Testing Library (frontend)
 
----
+## Architecture Overview
 
-## 🚀 Quick Start
-
-### Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed — that's it!
-
-```bash
-# 1. Clone
-git clone https://github.com/YOUR_USERNAME/netedu.git
-cd netedu
-
-# 2. Environment (pre-filled with dev defaults)
-cp .env.example .env
-
-# 3. Run everything
-docker compose up --build
-
-# 4. Create admin user (new terminal)
-docker compose exec backend python manage.py createsuperuser
-```
-
-| Service | URL |
-|---|---|
-| React App | http://localhost:5173 |
-| Django API | http://localhost:8000/api/ |
-| Django Admin | http://localhost:8000/admin/ |
-
----
-
-## 📁 Project Structure
-
-```
-netedu/
+```text
+netedu_clean/
 ├── backend/
 │   ├── apps/
-│   │   ├── users/          # Custom User model, JWT auth
-│   │   ├── network/        # Speed tests, NDT7 endpoints, M-Lab style stats
-│   │   ├── learning/       # Courses, lessons, quizzes, progress
+│   │   ├── users/
+│   │   ├── network/
+│   │   ├── learning/
 │   │   └── analytics/
-│   │       ├── services.py     # Pandas aggregations
-│   │       └── correlation.py  # Pearson correlation (unique feature)
-│   ├── tests/              # 15+ pytest tests
-│   └── Dockerfile
+│   ├── netedu/
+│   └── tests/
 ├── frontend/
-│   ├── src/
-│   │   ├── hooks/
-│   │   │   ├── useAuth.tsx       # JWT auth context
-│   │   │   └── useSpeedTest.ts   # Real browser speed measurement
-│   │   ├── components/
-│   │   │   └── network/SpeedTestWidget.tsx  # Animated speed test UI
-│   │   └── pages/          # Dashboard, Network, Learning
-│   └── Dockerfile
-├── nginx/nginx.conf
-├── .github/workflows/ci.yml
+│   └── src/
+├── nginx/
 └── docker-compose.yml
 ```
 
----
+## Quick Start
 
-## 🔌 API Reference
+### Prerequisites
+- Docker Desktop
 
-### Speed Test (Real measurement)
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/network/ping/` | Latency measurement |
-| GET | `/network/download-test/` | Streams random bytes for download |
-| POST | `/network/upload-test/` | Accepts bytes for upload measurement |
-
-### Analytics
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/analytics/dashboard/` | Combined network + learning data |
-| GET | `/analytics/correlation/` | **Pearson r: network quality vs learning** |
-| GET | `/network/public-stats/` | Open data, no auth required |
-
----
-
-## 🧪 Tests
+### Run the project
 
 ```bash
-docker compose exec backend pytest tests/ -v
+docker compose up -d --build
 ```
 
----
+### Access URLs
 
-## 🏗️ Architecture Decisions
+- App (via Nginx): `http://localhost`
+- Frontend dev server: `http://localhost:5173`
+- Backend API: `http://localhost:8000`
+- Health check: `http://localhost:8000/api/health/`
+- API docs: `http://localhost:8000/api/docs/`
 
-**Why real speed tests?**
-Simulated data is dishonest. The `useSpeedTest` hook uses browser `fetch()` with parallel streams and measures actual throughput — the same fundamental method as fast.com and M-Lab NDT7.
+## Production Deployment
 
-**Why Pandas for correlation?**
-The correlation feature uses `pd.merge()` + `.corr()` — real data science, not fake. This directly demonstrates skills for M-Lab GSoC work.
+- Frontend: Vercel (`frontend` as root directory)
+- Backend + DB: Render (Blueprint via `render.yaml`)
+- Full guide: [DEPLOYMENT.md](DEPLOYMENT.md)
 
-**Why the correlation feature?**
-No other learning platform correlates connectivity with learning outcomes. This is original, useful, and technically interesting — exactly what GSoC mentors look for.
+## Useful Commands
 
----
+### Backend tests
+```bash
+docker compose exec backend pytest tests/test_api.py -q
+```
 
-## 🗺️ Roadmap
+### Frontend tests
+```bash
+cd frontend
+npm run test
+```
 
-- [ ] WebSocket real-time updates  
-- [ ] Celery scheduled analytics recomputation  
-- [ ] Kubernetes manifests  
-- [ ] Grafana + Prometheus monitoring  
-- [ ] CSV open data export  
+### Frontend type check
+```bash
+cd frontend
+npx tsc --noEmit
+```
 
----
+## Key API Endpoints
 
-## 📄 License
+### Auth
+- `POST /api/auth/register/`
+- `POST /api/auth/login/`
+- `POST /api/auth/refresh/`
 
-MIT — see [LICENSE](LICENSE)
+### User
+- `GET /api/users/me/`
+- `PATCH /api/users/me/`
 
----
+### Network
+- `GET /api/network/measurements/`
+- `POST /api/network/measurements/`
+- `GET /api/network/measurements/stats/`
+- `GET /api/network/measurements/trend/`
+- `GET /api/network/public-stats/`
+- `GET /api/network/measurements/export_csv/`
 
-*Built as a GSoC preparation project. Stack mirrors [Learning Unlimited ESP-Website](https://github.com/learning-unlimited/ESP-Website) and [Measurement Lab](https://www.measurementlab.net/) tooling.*
+### Learning
+- `GET /api/learning/courses/`
+- `GET /api/learning/enrollments/`
+- `POST /api/learning/enrollments/`
+
+### Analytics
+- `GET /api/analytics/dashboard/`
+- `GET /api/analytics/correlation/`
+- `GET /api/analytics/leaderboard/?limit=50`
+- `GET /api/analytics/leaderboard/me/?window=2`
+
+## Current Quality Status
+
+- Backend API tests: passing
+- Frontend unit tests: passing
+- TypeScript type check: passing
+- Dockerized local environment: working
+
+## Roadmap (Next Upgrades)
+
+- WebSocket live updates (leaderboard + network events)
+- Background jobs with Celery
+- Email reports and scheduled analytics
+- Observability (metrics + tracing)
+- Deployment hardening (staging/prod workflows)
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
