@@ -1,0 +1,48 @@
+# ── Python / Django ────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+*.log
+*.pot
+*.pyc
+db.sqlite3
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# ── Environment ────────────────────────────────────────────────────────────
+.env
+*.env.local
+*.env.production
+
+# ── Node / React ───────────────────────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# ── Docker ─────────────────────────────────────────────────────────────────
+# (keep docker files, ignore volumes)
+postgres_data/
+
+# ── OS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE ────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Django static/media ────────────────────────────────────────────────────
+staticfiles/
+media/
