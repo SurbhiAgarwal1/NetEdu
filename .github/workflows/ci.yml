@@ -1,0 +1,168 @@
+# .github/workflows/ci.yml
+# ──────────────────────────────────────────────────────────────────────────
+# NetEdu CI/CD Pipeline
+# Runs on every push/PR:
+#   1. Backend: lint + pytest
+#   2. Frontend: lint + build
+#   3. Docker: build both images
+#   4. (on main branch): deploy notification
+# ──────────────────────────────────────────────────────────────────────────
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+
+jobs:
+  # ── Job 1: Backend Tests ─────────────────────────────────────────────────
+  backend-test:
+    name: Backend — Lint & Test
+    runs-on: ubuntu-latest
+
+    services:
+      # Spin up a real PostgreSQL for tests
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: netedu_test
+          POSTGRES_USER: netedu_user
+          POSTGRES_PASSWORD: netedu_pass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run database migrations
+        env:
+          SECRET_KEY: ci-test-secret-key-not-for-production
+          DEBUG: "True"
+          DATABASE_URL: postgresql://netedu_user:netedu_pass@localhost:5432/netedu_test
+        run: python manage.py migrate --noinput
+
+      - name: Run tests with pytest
+        env:
+          SECRET_KEY: ci-test-secret-key-not-for-production
+          DEBUG: "True"
+          DATABASE_URL: postgresql://netedu_user:netedu_pass@localhost:5432/netedu_test
+          ALLOWED_HOSTS: localhost,127.0.0.1
+        run: |
+          pytest tests/ -v --tb=short --junit-xml=test-results.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()   # upload even if tests fail
+        with:
+          name: backend-test-results
+          path: backend/test-results.xml
+
+  # ── Job 2: Frontend Build ─────────────────────────────────────────────────
+  frontend-build:
+    name: Frontend — Lint & Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build for production
+        run: npm run build
+        env:
+          VITE_API_URL: /api
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist/
+
+  # ── Job 3: Docker Build ───────────────────────────────────────────────────
+  docker-build:
+    name: Docker — Build Images
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-build]  # only runs if tests pass
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: false   # set to true + add registry login for actual deployment
+          tags: netedu-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          target: build
+          push: false
+          tags: netedu-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Job 4: Summary ────────────────────────────────────────────────────────
+  notify:
+    name: Pipeline Summary
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-build, docker-build]
+    if: always()
+
+    steps:
+      - name: Report status
+        run: |
+          echo "Backend tests: ${{ needs.backend-test.result }}"
+          echo "Frontend build: ${{ needs.frontend-build.result }}"
+          echo "Docker build: ${{ needs.docker-build.result }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"

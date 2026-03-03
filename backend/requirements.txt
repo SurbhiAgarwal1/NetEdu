@@ -1,0 +1,25 @@
+# ── Core Django ────────────────────────────────────────────────────────────
+Django==5.0.6
+djangorestframework==3.15.1
+djangorestframework-simplejwt==5.3.1   # JWT authentication
+django-cors-headers==4.3.1             # Allow React to talk to Django
+dj-database-url==2.1.0                 # Parse DATABASE_URL env var
+django-environ==0.11.2                 # Read .env files cleanly
+
+# ── PostgreSQL driver ───────────────────────────────────────────────────────
+psycopg2-binary==2.9.9
+
+# ── Data processing ─────────────────────────────────────────────────────────
+pandas==2.2.2
+plotly==5.22.0
+
+# ── API utilities ───────────────────────────────────────────────────────────
+django-filter==24.2                    # Filtering querysets in DRF
+whitenoise==6.7.0                      # Serve static files efficiently
+drf-spectacular==0.27.2                # OpenAPI schema + Swagger UI
+
+# ── Dev / Testing ───────────────────────────────────────────────────────────
+pytest==8.2.2
+pytest-django==4.8.0
+factory-boy==3.3.0                     # Create fake test data easily
+numpy==1.26.4
