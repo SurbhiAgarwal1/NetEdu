@@ -46,3 +46,8 @@ Thumbs.db
 # ── Django static/media ────────────────────────────────────────────────────
 staticfiles/
 media/
+
+# ── Coverage ──────────────────────────────────────────────────────────────────
+htmlcov/
+coverage.xml
+.coverage.*

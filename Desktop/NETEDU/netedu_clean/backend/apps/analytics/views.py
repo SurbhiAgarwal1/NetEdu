@@ -15,7 +15,14 @@ from .correlation import compute_correlation
 @permission_classes([IsAuthenticated])
 def dashboard(request):
     """GET /api/analytics/dashboard/ — full dashboard data"""
-    return Response(get_combined_dashboard(request.user))
+    try:
+        data = get_combined_dashboard(request.user)
+        return Response(data)
+    except Exception as e:
+        return Response(
+            {"error": "Service temporarily unavailable. Please try again later.", "details": str(e)},
+            status=503
+        )
 
 
 @api_view(["GET"])

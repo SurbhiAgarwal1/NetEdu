@@ -161,6 +161,40 @@ npx tsc --noEmit
 - TypeScript type check: passing
 - Dockerized local environment: working
 
+## Test Coverage & Quality
+
+### Testing Strategy
+NetEdu uses a layered testing approach:
+- Django TestCase for integration tests (auth, API, DB)
+- pytest-cov for branch and line coverage measurement
+- factory_boy for realistic test data generation
+- unittest.mock for isolating external dependencies
+- GitHub Actions for automated CI on every push
+- Codecov for coverage tracking and PR checks
+
+### Coverage Focus Areas
+
+| Module | Lines Tested | Focus |
+|--------|-------------|-------|
+| users | Auth, JWT, profile, roles | Happy path + edge |
+| network | CRUD, stats, trend, edge cases | Edge-case heavy |
+| learning | Courses, enrollments, progress | Business rules |
+| analytics | Dashboard, correlation, leaderboard | Mock + edge |
+
+### Coverage Gap Analysis
+Before this test suite, the analytics module had the 
+weakest coverage because correlation and leaderboard 
+endpoints would silently return HTTP 500 when called 
+with no data. These edge cases were identified using 
+pytest-cov branch coverage and were prioritized first.
+
+### Regression Guards
+The RegressionTestCase class locks in 6 critical 
+business rules and formulas. If any future code change 
+breaks these rules, the test suite will fail immediately 
+before merge — catching regressions before they reach 
+production.
+
 ## Roadmap (Next Upgrades)
 
 - WebSocket live updates (leaderboard + network events)

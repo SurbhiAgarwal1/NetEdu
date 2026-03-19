@@ -1,0 +1,18 @@
+[run]
+source = apps
+omit =
+    */migrations/*
+    */admin.py
+    */apps.py
+    */__init__.py
+    */settings*
+    manage.py
+
+[report]
+show_missing = True
+skip_covered = False
+precision = 2
+
+[html]
+directory = htmlcov
+title = NetEdu Coverage Report
