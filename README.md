@@ -1,4 +1,4 @@
-# NetEdu - Network - Aware Learning Platform
+# NetEdu - (Network Aware Learning Platform)
 
 NetEdu is a **Network-Aware Learning Platform**.  
 It is a full-stack platform that measures internet quality and connects it with learning outcomes.  
